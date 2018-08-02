@@ -1,0 +1,1 @@
+single_filtered<-data.frame(); for (i in 1:dim(megajoin)[1]){if(megajoin[i,36]!=1 && megajoin[i,13]=="myelodysplastic_syndrome" && megajoin[i,14]!="NS"){single_filtered <- rbind(single_filtered,megajoin[i,]); print(i)}}
