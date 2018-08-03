@@ -1,4 +1,5 @@
-#Script for filtering relevant mutations from COSMIC list of mutations haematopoietic tissue.
+#Script for filtering relevant mutations from COSMIC list of mutations from haematopoietic tissue.
+#The downstream application is to use Fisher's exact test to determine which mutations co-occur or are mutually exclusive.
 #Filtering is necessary as there are a number of publications that only examine a few genes (or only 1 gene).
 #This will cause problems for determining associations.
 
@@ -14,6 +15,8 @@ PMID_ord<-V85_38_MUTANT[order(V85_38_MUTANT$PUBMED_PMID),]
 
 library(plyr)
 
+#Looking at the dataset, there are a number of publications that only genotyped one gene. E.g. there is an abundance of mutation entries
+#For JAK2 mutations alone. These would not 
 #Get number of times this gene/publication combo appears, a bit slow
 num_pmid_gene<- ddply(PMID_ord,.(GENE_NAME,PUBMED_PMID),'nrow')
 
@@ -38,13 +41,16 @@ rm(megajoin,PMID_ord,joined_counted)
 #make a list of subtypes of interest
 subtype_list<-c("5q-myelodysplastic_syndrome", "refractory_anaemia", "refractory_anaemia_with_excess_blasts", "refractory_anaemia_with_ringed_sideroblasts", "refractory_cytopenia_with_multilinear_dysplasia", "refractory_cytopenia_with_multilinear_dysplasia_with_ringed_sideroblasts","refractory_cytopenia_with_unilineage_dysplasia", "refractory_thrombocytopenia")
 
-#Get subset from list
+#Get the subset of mutations that occur in samples that have been subtyped as those occuring in subtype_list
 stage1_filtered<-stage1_filtered[stage1_filtered$HISTOLOGY_SUBTYPE_2 %in% subtype_list,]
 
+#Refractory cytopenia with unliniage dysplasia (RCUD) is subtyped further as refractory anaemaia/refractory cytopaenia in an adjacent column.
 #List of indexes that are rcud
+
 rcudlist<-data.frame(); for (i in 1:dim(stage1_filtered)[1]){if (stage1_filtered[i,8]=="refractory_cytopenia_with_unilineage_dysplasia") rcudlist<-rbind(rcudlist,i)}
 
 #change rcud to RA/RT etc
+#RCUD subtypes are listed in column 9. Grab contents from column 9 at rows found in rcudlist, replacing column 8 (a.k.a. HISTOLOGY_SUBTYPE_2)
 stage1_filtered[,c(8,9)]<-sapply(stage1_filtered[,c(8,9)],as.character)
 for (j in rcudlist){stage1_filtered[j,8]<-stage1_filtered[j,9]}
 rm(rcudlist)
